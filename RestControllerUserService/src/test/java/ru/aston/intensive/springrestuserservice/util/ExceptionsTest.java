@@ -23,7 +23,7 @@ public class ExceptionsTest {
     void testUserNotFoundExceptionDefaultConstructor() {
         UserNotFoundException exception = new UserNotFoundException();
 
-       assertNull(exception.getMessage());
+        assertNull(exception.getMessage());
     }
 
     /**

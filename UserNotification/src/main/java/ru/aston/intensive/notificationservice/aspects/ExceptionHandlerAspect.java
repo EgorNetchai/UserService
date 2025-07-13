@@ -45,7 +45,7 @@ public class ExceptionHandlerAspect {
      * @param ex исключение
      */
     @AfterThrowing(pointcut = "execution(* ru.aston.intensive.notificationservice.services." +
-            "EmailService.listenUserEvents(..)) && args(event)", throwing = "ex")
+            "KafkaConsumer.listenUserEvents(..)) && args(event)", throwing = "ex")
     public void handleListenUserEventsException(UserNotificationDto event, Exception ex) {
         logger.error("Ошибка обработки события пользователя для email {}: {}",
                 event != null ? event.getEmail() : null, ex.getMessage(), ex);

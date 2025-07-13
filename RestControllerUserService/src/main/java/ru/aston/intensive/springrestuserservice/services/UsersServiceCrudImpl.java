@@ -70,9 +70,11 @@ public class UsersServiceCrudImpl implements UsersServiceCrud {
      *
      * @param userEntity пользователь для сохранения
      *
+     * @return сохраненный пользователь
+     *
      * @throws IllegalArgumentException если email уже занят
      */
-    public void save(UserEntity userEntity) {
+    public UserEntity save(UserEntity userEntity) {
 
         if (usersRepository.existsByEmail(userEntity.getEmail())) {
             throw new IllegalArgumentException("Email уже занят");
@@ -81,7 +83,7 @@ public class UsersServiceCrudImpl implements UsersServiceCrud {
         userEntity.setCreated_at(LocalDateTime.now());
         userEntity.setUpdated_at(LocalDateTime.now());
 
-        usersRepository.save(userEntity);
+        return usersRepository.save(userEntity);
     }
 
     /**

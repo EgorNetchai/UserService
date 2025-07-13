@@ -1,7 +1,17 @@
 package ru.aston.intensive.springrestuserservice.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -16,13 +26,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.aston.intensive.springrestuserservice.dto.UserDto;
 import ru.aston.intensive.springrestuserservice.models.UserEntity;
-import ru.aston.intensive.springrestuserservice.services.MapperService;
+import ru.aston.intensive.springrestuserservice.services.UserMapper;
 import ru.aston.intensive.springrestuserservice.services.UsersServiceCrud;
 import ru.aston.intensive.springrestuserservice.util.UserNotCreatedException;
 import ru.aston.intensive.springrestuserservice.util.UserNotFoundException;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * REST-контроллер для управления пользователями.
@@ -30,36 +42,58 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/users")
+@Tag(name = "Пользователи", description = "Взаимодействие с пользователями")
 public class UsersController {
 
     private final UsersServiceCrud usersServiceCRUD;
-    private final MapperService mapperService;
+    private final UserMapper userMapper;
 
     /**
      * Конструктор контроллера пользователей.
      *
-     * @param usersServiceCRUD сервис для работы с пользователями
-     * @param mapperService маппер для преобразования объектов между UserEntity и UserDto
+     * @param usersServiceCRUD Сервис для работы с пользователями
+     * @param userMapper Маппер для преобразования объектов между UserEntity и UserDto
      */
     @Autowired
-    public UsersController(UsersServiceCrud usersServiceCRUD, MapperService mapperService) {
+    public UsersController(UsersServiceCrud usersServiceCRUD, UserMapper userMapper) {
         this.usersServiceCRUD = usersServiceCRUD;
-        this.mapperService = mapperService;
+        this.userMapper = userMapper;
     }
 
 
     /**
      * Получает список всех пользователей.
      *
-     * @return список пользователей в формате UserDto
+     * @return Список пользователей в формате UserDto
      *
-     * @throws UserNotFoundException если пользователи не найдены
+     * @throws UserNotFoundException Если пользователи не найдены
      */
     @GetMapping
-    public List<UserDto> getUsers() {
-        return usersServiceCRUD.findAll().stream()
-                .map(mapperService::convertToUserDto)
-                .collect(Collectors.toList());
+    @Operation(
+            summary = "Получение всех пользователей",
+            description = "Позволяет получить список данных всех пользователей"
+    )
+    @ApiResponses( value = {
+            @ApiResponse(responseCode = "200", description = "Все пользователи получены", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Неверный запрос"),
+            @ApiResponse(responseCode = "404", description = "Страница не найдена"),
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+    })
+    public CollectionModel<UserDto> getUsers() {
+        List<UserDto> users = usersServiceCRUD.findAll().stream()
+                .map(userEntity -> {
+                    UserDto userDto = userMapper.toUserDto(userEntity);
+                    userDto.add(linkTo(methodOn(UsersController.class).getUser(userEntity.getId())).withSelfRel());
+                    userDto.add(linkTo(methodOn(UsersController.class).getUsers()).withRel("users"));
+                    userDto.add(Link.of("users/update/" + userEntity.getId(), "update").withType("PUT"));
+                    return userDto;
+                })
+                .toList();
+        return CollectionModel.of(users,
+                linkTo(methodOn(UsersController.class).getUsers()).withSelfRel(),
+                Link.of("users/create", "create").withType("POST"));
     }
 
     /**
@@ -72,24 +106,55 @@ public class UsersController {
      * @throws UserNotFoundException если пользователь не найден
      */
     @GetMapping("/{id}")
-    public UserDto getUser(@PathVariable("id") Long id) {
-        return mapperService.convertToUserDto(usersServiceCRUD.findOne(id));
+    @Operation(
+            summary = "Получение пользователя",
+            description = "Позволяет получить данные пользователя по его Id"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Пользователь получен успешно", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Неверный запрос"),
+            @ApiResponse(responseCode = "404", description = "Страница не найдена"),
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+    })
+    public EntityModel<UserDto> getUser(@Parameter(description = "Id пользователя") @PathVariable("id") Long id) {
+       UserDto userDto = userMapper.toUserDto(usersServiceCRUD.findOne(id));
+       userDto.add(linkTo(methodOn(UsersController.class).getUser(id)).withSelfRel());
+       userDto.add(linkTo(methodOn(UsersController.class).getUsers()).withRel("users"));
+       userDto.add(Link.of("/users/update/" + id, "update").withType("PUT"));
+       userDto.add(linkTo(methodOn(UsersController.class).deleteUser(id)).withRel("delete"));
+       return EntityModel.of(userDto);
     }
 
     /**
      * Создает нового пользователя.
      *
-     * @param userDto       данные пользователя в формате UserDto
-     * @param bindingResult результат валидации
+     * @param userDto       Данные пользователя в формате UserDto
+     * @param bindingResult Результат валидации
      *
      * @return HTTP-статус OK при успешном создании
      *
-     * @throws UserNotCreatedException если данные пользователя некорректны
-     * @throws IllegalArgumentException если email уже занят
+     * @throws UserNotCreatedException  Если данные пользователя некорректны
+     * @throws IllegalArgumentException Если email уже занят
      */
-    @PostMapping
-    public ResponseEntity<HttpStatus> createUser(@RequestBody @Valid UserDto userDto,
-                                                 BindingResult bindingResult) {
+    @PostMapping("/create")
+    @Operation(
+            summary = "Создание пользователя",
+            description = "Позволяет создавать и сохранять пользователя"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Пользователь создан успешно", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Ошибка создания пользователя"),
+            @ApiResponse(responseCode = "404", description = "Страница не найдена"),
+            @ApiResponse(responseCode = "405", description = "Метод не разрешен"),
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+    })
+    public ResponseEntity<UserDto> createUser(
+            @RequestBody @Valid @Parameter(description = "Объект пользователя") UserDto userDto,
+            @Parameter(description = "Ожидаемый результат")BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             StringBuilder errorMsg = new StringBuilder();
@@ -105,9 +170,12 @@ public class UsersController {
             throw new UserNotCreatedException(errorMsg.toString());
         }
 
-        usersServiceCRUD.save(mapperService.convertToUserEntity(userDto));
+        UserEntity savedUser = usersServiceCRUD.save(userMapper.toUserEntity(userDto));
+        UserDto saveUserDto = userMapper.toUserDto(savedUser);
+        saveUserDto.add(linkTo(methodOn(UsersController.class).getUser(savedUser.getId())).withSelfRel());
+        saveUserDto.add(linkTo(methodOn(UsersController.class).getUsers()).withRel("users"));
 
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saveUserDto);
     }
 
     /**
@@ -123,10 +191,25 @@ public class UsersController {
      * @throws UserNotFoundException    если пользователь не найден
      * @throws IllegalArgumentException если email уже занят
      */
-    @PutMapping("/{id}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable("id") Long id,
-                                                 @RequestBody @Valid UserDto userDto,
-                                                 BindingResult bindingResult) {
+    @PutMapping("/update/{id}")
+    @Operation(
+            summary = "Обновление пользователя",
+            description = "Обновляет существующего пользователя"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Пользователь успешно обновлен", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Неверный запрос"),
+            @ApiResponse(responseCode = "404", description = "Страница не найдена"),
+            @ApiResponse(responseCode = "405", description = "Метод не разрешен"),
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+    })
+    public ResponseEntity<UserDto> updateUser(
+            @Parameter(description = "Id пользователя") @PathVariable("id")  Long id,
+            @Parameter(description = "Объект пользователя") @RequestBody @Valid  UserDto userDto,
+            @Parameter(description = "Ожидаемый результат") BindingResult bindingResult
+    ) {
 
         if (bindingResult.hasErrors()) {
             StringBuilder errorMsg = new StringBuilder();
@@ -141,9 +224,13 @@ public class UsersController {
             throw new UserNotCreatedException(errorMsg.toString());
         }
 
-        UserEntity updatedUserEntity = usersServiceCRUD.update(id, mapperService.convertToUserEntity(userDto));
+        UserEntity updatedUserEntity = usersServiceCRUD.update(id, userMapper.toUserEntity(userDto));
+        UserDto updatedUserDto = userMapper.toUserDto(updatedUserEntity);
+        updatedUserDto.add(linkTo(methodOn(UsersController.class).getUser(id)).withSelfRel());
+        updatedUserDto.add(linkTo(methodOn(UsersController.class).getUsers()).withRel("users"));
+        updatedUserDto.add(linkTo(methodOn(UsersController.class).deleteUser(id)).withRel("delete"));
 
-        return ResponseEntity.ok(mapperService.convertToUserDto(updatedUserEntity));
+        return ResponseEntity.ok(updatedUserDto);
     }
 
     /**
@@ -155,10 +242,22 @@ public class UsersController {
      *
      * @throws UserNotFoundException если пользователь не найден
      */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") Long id) {
+    @DeleteMapping("/delete/{id}")
+    @Operation( summary = "Удаление пользователя",
+                description = "Удаление существующего пользователя по его ID"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "no content"),
+            @ApiResponse(responseCode = "400", description = "Неверный запрос"),
+            @ApiResponse(responseCode = "404", description = "Страница не найдена"),
+            @ApiResponse(responseCode = "405", description = "Метод не разрешен"),
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+    })
+    public ResponseEntity<Void> deleteUser(
+            @Parameter(description = "Id пользователя") @PathVariable("id") Long id
+    ) {
         usersServiceCRUD.delete(id);
 
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.noContent().build();
     }
 }

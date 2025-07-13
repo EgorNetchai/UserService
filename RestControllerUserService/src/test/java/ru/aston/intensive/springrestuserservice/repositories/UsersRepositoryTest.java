@@ -136,7 +136,6 @@ public class UsersRepositoryTest {
                 "Сообщение об ошибке должно содержать 'Email не должен быть пустым'");
     }
 
-
     /**
      * Проверяет сохранение и извлечение всех пользователей.
      */
@@ -153,7 +152,7 @@ public class UsersRepositoryTest {
 
         assertTrue(users.stream().anyMatch(user -> user.getName().equals("John Doe") &&
                 user.getEmail().equals("john@example.com") &&
-                user.getAge() ==30), "Пользователь John Doe должен быть в списке");
+                user.getAge() == 30), "Пользователь John Doe должен быть в списке");
 
         assertTrue(users.stream().anyMatch(user -> user.getName().equals("Jane Smith") &&
                 user.getEmail().equals("jane@example.com") &&

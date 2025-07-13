@@ -1,4 +1,4 @@
-package ru.aston.intensive.kafkaproducer.kafkaconfig;
+package ru.aston.intensive.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -23,7 +23,7 @@ import java.util.Map;
 public class ProducerKafkaConfig {
 
     /** Название топика Kafka. */
-    @Value("user-event")
+    @Value("${kafka.topicName:user-event}")
     private String topicName;
 
     /** Количество партиций для топика. */
@@ -35,9 +35,8 @@ public class ProducerKafkaConfig {
     private int replicasNumber;
 
     /** Адрес сервера Kafka. */
-    @Value("localhost:29092") //если брать из env падают тесты UsersServiceCrudImplIntegrationTest и UserControllerTest
+    @Value("${kafka.bootstrapAddress:localhost:29092}") //если брать из env падают тесты UsersServiceCrudImplIntegrationTest и UserControllerTest
     private String bootstrapAddress;
-
 
     /**
      * Создаёт топик Kafka.

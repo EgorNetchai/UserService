@@ -18,7 +18,7 @@ import ru.aston.intensive.common.dto.UserNotificationDto;
 public class EventSender {
 
     /** Название топика Kafka для отправки сообщений. */
-    @Value("user-event")
+    @Value("${kafka.topicName:user-event}")
     private String topicName;
 
     /** Номер партиции для отправки сообщений. */
