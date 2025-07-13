@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.aston.intensive.springrestuserservice.controllers.UsersController;
 import ru.aston.intensive.springrestuserservice.dto.UserDto;
 import ru.aston.intensive.springrestuserservice.models.UserEntity;
 import ru.aston.intensive.springrestuserservice.services.UserMapper;

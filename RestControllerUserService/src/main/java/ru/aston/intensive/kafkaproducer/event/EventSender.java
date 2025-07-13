@@ -26,7 +26,7 @@ public class EventSender {
     private int partition;
 
     /** Шаблон Kafka для отправки сообщений. */
-    private KafkaTemplate<String, UserNotificationDto> kafkaTemplate;
+    private final KafkaTemplate<String, UserNotificationDto> kafkaTemplate;
 
     /**
      * Конструктор для внедрения зависимостей.
