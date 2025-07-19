@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.aston.intensive.springrestuserservice.util.DatabaseOperationException;
+import ru.aston.intensive.springrestuserservice.util.KafkaOperationException;
 import ru.aston.intensive.springrestuserservice.util.UserErrorResponse;
 import ru.aston.intensive.springrestuserservice.util.UserNotCreatedException;
 import ru.aston.intensive.springrestuserservice.util.UserNotFoundException;
@@ -65,5 +67,39 @@ public class GlobalExceptionHandler {
         );
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Обрабатывает исключение для сбоев базы данных.
+     *
+     * @param e Исключение DatabaseOperationException
+     *
+     * @return Ответ с описанием ошибки и статусом 503
+     */
+    @ExceptionHandler
+    public ResponseEntity<UserErrorResponse> handleException(DatabaseOperationException e) {
+        UserErrorResponse response = new UserErrorResponse(
+                e.getMessage() != null ? e.getMessage() : "Ошибка операции с базой данных",
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    /**
+     * Обрабатывает исключение для сбоев Kafka.
+     *
+     * @param e Исключение KafkaOperationException
+     *
+     * @return Ответ с описанием ошибки и статусом 503
+     */
+    @ExceptionHandler
+    public ResponseEntity<UserErrorResponse> handleException(KafkaOperationException e) {
+        UserErrorResponse response = new UserErrorResponse(
+                e.getMessage() != null ? e.getMessage() : "Failed to send message to Kafka",
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(response, HttpStatus.SERVICE_UNAVAILABLE);
     }
 }
