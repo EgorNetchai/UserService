@@ -2,7 +2,9 @@ package ru.aston.intensive.notificationservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.kafka.annotation.EnableKafka;
 
 /**
@@ -10,7 +12,9 @@ import org.springframework.kafka.annotation.EnableKafka;
  * Запускает Spring Boot приложение и включает поддержку Kafka.
  */
 @SpringBootApplication
-@ComponentScan(basePackages = "ru.aston.intensive")
+@ComponentScan(basePackages = "ru.aston.intensive.notificationservice")
+@EntityScan(basePackages = "ru.aston.intensive.notificationservice.model")
+@EnableAspectJAutoProxy
 @EnableKafka
 public class NotificationServiceApplication {
 

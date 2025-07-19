@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.aspectj.lang.annotation.Aspect;
 import ru.aston.intensive.common.dto.UserNotificationDto;
+
 /**
  * Аспект для логирования операций сервиса отправки email.
  */
@@ -27,7 +28,7 @@ public class LoggingAspect {
      * @param event событие пользователя
      */
     @Before("execution(* ru.aston.intensive.notificationservice.services." +
-            "EmailService.listenUserEvents(..)) && args(event)")
+            "KafkaConsumer.listenUserEvents(..)) && args(event)")
     public void logBeforeListenUserEvents(UserNotificationDto event) {
         logger.info("Получено событие пользователя: email={}, тип события={}",
                 event != null ? event.getEmail() : null,
@@ -40,7 +41,7 @@ public class LoggingAspect {
      * @param event событие пользователя
      */
     @AfterReturning("execution(* ru.aston.intensive.notificationservice.services." +
-            "EmailService.sendEmail(..)) && args(event)")
+            "EmailServiceImpl.sendEmail(..)) && args(event)")
     public void logAfterSendEmail(UserNotificationDto event) {
         logger.info("Email успешно отправлен на адрес {}", event.getEmail());
     }

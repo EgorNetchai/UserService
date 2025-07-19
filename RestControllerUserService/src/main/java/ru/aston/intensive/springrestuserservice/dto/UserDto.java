@@ -15,7 +15,7 @@ import ru.aston.intensive.springrestuserservice.util.ValidEmail;
  * Класс DTO (Data Transfer Object) для передачи данных о пользователе.
  * Используется для валидации и передачи данных между слоями приложения
  */
-@Schema(description = "Объект передачи данных для сущности User")
+@Schema(description = "Объект передачи данных для сущности UserEntity")
 public class UserDto extends RepresentationModel<UserDto> {
     @NotBlank(message = "Имя не должно быть пустым")
     @Size(min = 2, max = 50, message = "Имя должно быть от 2 до 50 символов")

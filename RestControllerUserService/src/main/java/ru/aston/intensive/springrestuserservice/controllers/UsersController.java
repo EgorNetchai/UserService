@@ -79,7 +79,8 @@ public class UsersController {
             }),
             @ApiResponse(responseCode = "400", description = "Неверный запрос"),
             @ApiResponse(responseCode = "404", description = "Страница не найдена"),
-            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера"),
+            @ApiResponse(responseCode = "503", description = "Сервис недоступен")
     })
     public CollectionModel<UserDto> getUsers() {
         List<UserDto> users = usersServiceCRUD.findAll().stream()
@@ -116,7 +117,8 @@ public class UsersController {
             }),
             @ApiResponse(responseCode = "400", description = "Неверный запрос"),
             @ApiResponse(responseCode = "404", description = "Страница не найдена"),
-            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера"),
+            @ApiResponse(responseCode = "503", description = "Сервис недоступен")
     })
     public EntityModel<UserDto> getUser(@Parameter(description = "Id пользователя") @PathVariable("id") Long id) {
        UserDto userDto = userMapper.toUserDto(usersServiceCRUD.findOne(id));
@@ -150,7 +152,8 @@ public class UsersController {
             @ApiResponse(responseCode = "400", description = "Ошибка создания пользователя"),
             @ApiResponse(responseCode = "404", description = "Страница не найдена"),
             @ApiResponse(responseCode = "405", description = "Метод не разрешен"),
-            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера"),
+            @ApiResponse(responseCode = "503", description = "Сервис недоступен")
     })
     public ResponseEntity<UserDto> createUser(
             @RequestBody @Valid @Parameter(description = "Объект пользователя") UserDto userDto,
@@ -203,7 +206,8 @@ public class UsersController {
             @ApiResponse(responseCode = "400", description = "Неверный запрос"),
             @ApiResponse(responseCode = "404", description = "Страница не найдена"),
             @ApiResponse(responseCode = "405", description = "Метод не разрешен"),
-            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера"),
+            @ApiResponse(responseCode = "503", description = "Сервис недоступен")
     })
     public ResponseEntity<UserDto> updateUser(
             @Parameter(description = "Id пользователя") @PathVariable("id")  Long id,
@@ -251,7 +255,8 @@ public class UsersController {
             @ApiResponse(responseCode = "400", description = "Неверный запрос"),
             @ApiResponse(responseCode = "404", description = "Страница не найдена"),
             @ApiResponse(responseCode = "405", description = "Метод не разрешен"),
-            @ApiResponse(responseCode = "500", description = "Ошибка сервера")
+            @ApiResponse(responseCode = "500", description = "Ошибка сервера"),
+            @ApiResponse(responseCode = "503", description = "Сервис недоступен")
     })
     public ResponseEntity<Void> deleteUser(
             @Parameter(description = "Id пользователя") @PathVariable("id") Long id

@@ -3,13 +3,17 @@ package ru.aston.intensive.springrestuserservice.services;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.aston.intensive.springrestuserservice.models.UserEntity;
 import ru.aston.intensive.springrestuserservice.repositories.UsersRepository;
+import ru.aston.intensive.springrestuserservice.util.DatabaseOperationException;
 import ru.aston.intensive.springrestuserservice.util.UserNotFoundException;
-
 
 /**
  * Сервис для управления пользователями.
@@ -19,8 +23,8 @@ import ru.aston.intensive.springrestuserservice.util.UserNotFoundException;
 @Transactional
 public class UsersServiceCrudImpl implements UsersServiceCrud {
 
+    private static final Logger log = LoggerFactory.getLogger(UsersServiceCrudImpl.class);
     private final UsersRepository usersRepository;
-
 
     /**
      * Конструктор сервиса пользователей.
@@ -39,6 +43,8 @@ public class UsersServiceCrudImpl implements UsersServiceCrud {
      *
      * @throws UserNotFoundException если список пользователей пуст
      */
+    @Override
+    @CircuitBreaker(name = "DatabaseCircuitBreaker", fallbackMethod = "fallbackDatabaseOperation")
     public List<UserEntity> findAll() {
         List<UserEntity> userEntities = usersRepository.findAll();
 
@@ -58,6 +64,8 @@ public class UsersServiceCrudImpl implements UsersServiceCrud {
      *
      * @throws UserNotFoundException если пользователь не найден
      */
+    @Override
+    @CircuitBreaker(name = "DatabaseCircuitBreaker", fallbackMethod = "fallbackDatabaseOperation")
     public UserEntity findOne(Long id) {
         Optional<UserEntity> foundUser = usersRepository.findById(id);
 
@@ -74,6 +82,8 @@ public class UsersServiceCrudImpl implements UsersServiceCrud {
      *
      * @throws IllegalArgumentException если email уже занят
      */
+    @Override
+    @CircuitBreaker(name = "DatabaseCircuitBreaker", fallbackMethod = "fallbackDatabaseOperation")
     public UserEntity save(UserEntity userEntity) {
 
         if (usersRepository.existsByEmail(userEntity.getEmail())) {
@@ -90,14 +100,16 @@ public class UsersServiceCrudImpl implements UsersServiceCrud {
      * Обновляет данные существующего пользователя.
      * Проверяет уникальность email и сохраняет временные метки.
      *
-     * @param id          идентификатор пользователя
+     * @param id                идентификатор пользователя
      * @param updatedUserEntity обновленные данные пользователя
      *
      * @return обновленный пользователь
      *
-     * @throws UserNotFoundException   если пользователь не найден
+     * @throws UserNotFoundException    если пользователь не найден
      * @throws IllegalArgumentException если email уже занят
      */
+    @Override
+    @CircuitBreaker(name = "DatabaseCircuitBreaker", fallbackMethod = "fallbackDatabaseOperation")
     public UserEntity update(Long id, UserEntity updatedUserEntity) {
         UserEntity existingUserEntity = usersRepository.findById(id)
                 .orElseThrow(UserNotFoundException::new);
@@ -122,11 +134,25 @@ public class UsersServiceCrudImpl implements UsersServiceCrud {
      *
      * @throws UserNotFoundException если пользователь не найден
      */
+    @Override
+    @CircuitBreaker(name = "DatabaseCircuitBreaker", fallbackMethod = "fallbackDatabaseOperation")
     public void delete(Long id) {
         if (!usersRepository.existsById(id)) {
             throw new UserNotFoundException();
         }
 
         usersRepository.deleteById(id);
+    }
+
+    /**
+     * Универсальный fallback-метод для обработки сбоев базы данных.
+     *
+     * @param t исключение, вызвавшее сбой
+     *
+     * @return null для всех операций, кроме delete
+     */
+    public Object fallbackDatabase(Throwable t) {
+        log.error("Ошибка операции с базой данных: {}", t.getMessage());
+        throw new DatabaseOperationException("Не удалось выполнить операцию с базой данных", t);
     }
 }

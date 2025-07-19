@@ -1,0 +1,217 @@
+openapi: 3.1.0
+info:
+  title: Email Management API
+  description: API для отправки email
+  version: "1.0"
+servers:
+- url: http://localhost:8082
+  description: Generated server url
+tags:
+- name: Сообщения
+  description: Отправка сообщений на email пользователя
+paths:
+  /notifications:
+    get:
+      tags:
+      - Сообщения
+      summary: Получение всех писем
+      description: Получение всех писем отправленных пользователям с уведомлениями
+        о создании или удалении
+      operationId: findAll
+      responses:
+        "200":
+          description: Все письма получены
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailNotificationDto"
+        "400":
+          description: Неверный запрос
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CollectionModelEmailNotificationDto"
+        "404":
+          description: Страница не найдена
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CollectionModelEmailNotificationDto"
+        "500":
+          description: Ошибка сервера
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CollectionModelEmailNotificationDto"
+        "503":
+          description: Сервис недоступен
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CollectionModelEmailNotificationDto"
+  /notifications/{id}:
+    get:
+      tags:
+      - Сообщения
+      summary: Получение письма
+      description: Получение одного письма по его id
+      operationId: findEmail
+      parameters:
+      - name: id
+        in: path
+        description: id письма
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Письмо получено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailNotificationDto"
+        "400":
+          description: Неверный запрос
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EntityModelEmailNotificationDto"
+        "404":
+          description: Страница не найдена
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EntityModelEmailNotificationDto"
+        "500":
+          description: Ошибка сервера
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EntityModelEmailNotificationDto"
+        "503":
+          description: Сервис недоступен
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EntityModelEmailNotificationDto"
+  /notifications/delete/{id}:
+    delete:
+      tags:
+      - Сообщения
+      summary: Удаление письма
+      description: Удаление одного письма по его id
+      operationId: deleteEmail
+      parameters:
+      - name: id
+        in: path
+        description: id письма
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "204":
+          description: no content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailNotificationDto"
+        "400":
+          description: Неверный запрос
+        "404":
+          description: Страница не найдена
+        "500":
+          description: Ошибка сервера
+        "503":
+          description: Сервис недоступен
+components:
+  schemas:
+    EmailNotificationDto:
+      type: object
+      description: Объект передачи данных для сущности EmailNotificationEntity
+      properties:
+        email:
+          type: string
+          description: email на который отправлено письмо
+          example: john.doe@example.com
+        eventType:
+          type: string
+          description: Тип события которое произошло с получателем
+          examples:
+          - CREATED
+          - DELETED
+        status:
+          type: string
+          description: Статус отправки письма
+          examples:
+          - SENT
+          - FAILED
+        timeStamp:
+          type: string
+          format: date-time
+          description: Время отправки письма
+          example: 2025.07.18 20:00:00
+        _links:
+          $ref: "#/components/schemas/Links"
+    CollectionModelEmailNotificationDto:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            emailNotificationDtoList:
+              type: array
+              items:
+                $ref: "#/components/schemas/EmailNotificationDto"
+        _links:
+          $ref: "#/components/schemas/Links"
+    EntityModelEmailNotificationDto:
+      type: object
+      properties:
+        email:
+          type: string
+          description: email на который отправлено письмо
+          example: john.doe@example.com
+        eventType:
+          type: string
+          description: Тип события которое произошло с получателем
+          examples:
+          - CREATED
+          - DELETED
+        status:
+          type: string
+          description: Статус отправки письма
+          examples:
+          - SENT
+          - FAILED
+        timeStamp:
+          type: string
+          format: date-time
+          description: Время отправки письма
+          example: 2025.07.18 20:00:00
+        _links:
+          $ref: "#/components/schemas/Links"
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        hreflang:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
+    Links:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/Link"
