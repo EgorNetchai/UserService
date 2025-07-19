@@ -178,8 +178,7 @@ public class UsersServiceCrudImplTest {
     @Test
     @DisplayName("Обработка ошибки при обновлении несуществующего пользователя")
     void testUpdateWhenUserNotFound() {
-        UserEntity updatedUserEntity = new UserEntity("John Smith", "john.smith@example.com", 31)
-                ;
+        UserEntity updatedUserEntity = new UserEntity("John Smith", "john.smith@example.com", 31);
         when(usersRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> usersServiceImpl.update(1L, updatedUserEntity));

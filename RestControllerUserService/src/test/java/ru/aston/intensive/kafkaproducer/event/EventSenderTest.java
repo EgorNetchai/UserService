@@ -40,7 +40,6 @@ class EventSenderTest {
 
     private UserNotificationDto userNotificationDto;
 
-
     @BeforeEach
     void setUp() throws NoSuchFieldException, IllegalAccessException {
         userNotificationDto = new UserNotificationDto();
@@ -56,7 +55,6 @@ class EventSenderTest {
         partitionField.setInt(eventSender, 1);
 
     }
-
 
     /**
      * Проверяет отправку сообщения в корректный топик и партицию.

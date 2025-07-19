@@ -28,8 +28,10 @@ public interface UsersServiceCrud {
      * Сохраняет нового пользователя.
      *
      * @param userEntity Сущность пользователя
+     *
+     * @return Сохраненную сущность пользователя
      */
-    void save(UserEntity userEntity);
+    UserEntity save(UserEntity userEntity);
 
     /**
      * Обновляет данные пользователя.

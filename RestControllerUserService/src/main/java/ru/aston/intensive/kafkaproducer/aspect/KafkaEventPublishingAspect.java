@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import ru.aston.intensive.common.dto.UserNotificationDto;
 import ru.aston.intensive.kafkaproducer.event.EventSender;
 import ru.aston.intensive.springrestuserservice.models.UserEntity;
-import ru.aston.intensive.springrestuserservice.services.MapperService;
+import ru.aston.intensive.springrestuserservice.services.UserMapper;
 import ru.aston.intensive.springrestuserservice.services.UsersServiceCrud;
 
 /**
@@ -20,15 +20,15 @@ public class KafkaEventPublishingAspect {
 
     private final EventSender eventSender;
     private final UsersServiceCrud usersServiceCrud;
-    private final MapperService mapper;
+    private final UserMapper userMapper;
 
     @Autowired
     public KafkaEventPublishingAspect(EventSender eventSender,
                                       UsersServiceCrud usersServiceCrud,
-                                      MapperService mapper) {
+                                      UserMapper userMapper) {
         this.eventSender = eventSender;
         this.usersServiceCrud = usersServiceCrud;
-        this.mapper = mapper;
+        this.userMapper = userMapper;
     }
 
     /**
@@ -41,7 +41,7 @@ public class KafkaEventPublishingAspect {
             "UsersServiceCrud.save(..)) && args(userEntity)"
     )
     public void publishUserCreatedEvent(UserEntity userEntity) {
-        UserNotificationDto userNotificationDto = mapper.convertToUserNotificationDto(userEntity);
+        UserNotificationDto userNotificationDto = userMapper.toUserNotificationDto(userEntity);
         userNotificationDto.setEventType("CREATED");
         eventSender.sendMessage(userNotificationDto);
     }
@@ -57,7 +57,7 @@ public class KafkaEventPublishingAspect {
     )
     public void publishUserDeletedEvent(Long id) {
         UserEntity user = usersServiceCrud.findOne(id);
-        UserNotificationDto userNotificationDto = mapper.convertToUserNotificationDto(user);
+        UserNotificationDto userNotificationDto = userMapper.toUserNotificationDto(user);
         userNotificationDto.setEventType("DELETED");
         eventSender.sendMessage(userNotificationDto);
     }

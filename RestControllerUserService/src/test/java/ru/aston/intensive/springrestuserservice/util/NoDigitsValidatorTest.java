@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestPropertySource(locations = "/application-test.yaml")
 public class NoDigitsValidatorTest {
 
-
     private NoDigitsValidator validator;
 
     @BeforeEach

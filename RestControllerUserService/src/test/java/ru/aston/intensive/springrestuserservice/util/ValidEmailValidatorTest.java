@@ -39,7 +39,7 @@ public class ValidEmailValidatorTest {
     })
     @DisplayName("Проверка валидных email-адресов")
     void testValidEmail(String email) {
-       assertTrue(validator.isValid(email, null), "Email " + email + " должен быть валидным");
+        assertTrue(validator.isValid(email, null), "Email " + email + " должен быть валидным");
     }
 
     /**

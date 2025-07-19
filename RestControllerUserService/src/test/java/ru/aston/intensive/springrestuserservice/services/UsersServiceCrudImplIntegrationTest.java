@@ -43,10 +43,8 @@ public class UsersServiceCrudImplIntegrationTest {
             .withUsername("test")
             .withPassword("test");
 
-
     @Autowired
     private UsersServiceCrudImpl usersServiceImpl;
-
 
     /**
      * Настраивает свойства базы данных для тестов.

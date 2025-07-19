@@ -12,7 +12,7 @@ import ru.aston.intensive.common.dto.UserNotificationDto;
 import ru.aston.intensive.kafkaproducer.aspect.KafkaEventPublishingAspect;
 import ru.aston.intensive.kafkaproducer.event.EventSender;
 import ru.aston.intensive.springrestuserservice.models.UserEntity;
-import ru.aston.intensive.springrestuserservice.services.MapperService;
+import ru.aston.intensive.springrestuserservice.services.UserMapper;
 import ru.aston.intensive.springrestuserservice.services.UsersServiceCrud;
 
 import static org.mockito.Mockito.times;
@@ -33,7 +33,7 @@ class KafkaEventPublishingAspectTest {
     private UsersServiceCrud usersServiceCrud;
 
     @Mock
-    private MapperService mapper;
+    private UserMapper mapper;
 
     @InjectMocks
     private KafkaEventPublishingAspect kafkaEventPublishingAspect;
@@ -57,11 +57,11 @@ class KafkaEventPublishingAspectTest {
     @Test
     @DisplayName("Публикация события создания пользователя")
     void publishUserCreatedEvent_shouldSendMessageWithCreatedEventType() {
-        when(mapper.convertToUserNotificationDto(userEntity)).thenReturn(userNotificationDto);
+        when(mapper.toUserNotificationDto(userEntity)).thenReturn(userNotificationDto);
 
         kafkaEventPublishingAspect.publishUserCreatedEvent(userEntity);
 
-        verify(mapper, times(1)).convertToUserNotificationDto(userEntity);
+        verify(mapper, times(1)).toUserNotificationDto(userEntity);
         verify(eventSender, times(1)).sendMessage(userNotificationDto);
         assert userNotificationDto.getEventType().equals("CREATED");
     }
@@ -74,12 +74,12 @@ class KafkaEventPublishingAspectTest {
     void publishUserDeletedEvent_shouldSendMessageWithDeletedEventType() {
         Long userId = 1L;
         when(usersServiceCrud.findOne(userId)).thenReturn(userEntity);
-        when(mapper.convertToUserNotificationDto(userEntity)).thenReturn(userNotificationDto);
+        when(mapper.toUserNotificationDto(userEntity)).thenReturn(userNotificationDto);
 
         kafkaEventPublishingAspect.publishUserDeletedEvent(userId);
 
         verify(usersServiceCrud, times(1)).findOne(userId);
-        verify(mapper, times(1)).convertToUserNotificationDto(userEntity);
+        verify(mapper, times(1)).toUserNotificationDto(userEntity);
         verify(eventSender, times(1)).sendMessage(userNotificationDto);
         assert userNotificationDto.getEventType().equals("DELETED");
     }

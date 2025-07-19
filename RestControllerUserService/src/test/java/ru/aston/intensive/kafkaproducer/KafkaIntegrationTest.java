@@ -8,8 +8,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -26,7 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ru.aston.intensive.common.dto.UserNotificationDto;
 import ru.aston.intensive.kafkaproducer.aspect.KafkaEventPublishingAspect;
 import ru.aston.intensive.springrestuserservice.models.UserEntity;
-import ru.aston.intensive.springrestuserservice.services.MapperService;
+import ru.aston.intensive.springrestuserservice.services.UserMapper;
 import ru.aston.intensive.springrestuserservice.services.UsersServiceCrud;
 
 import java.util.Map;
@@ -36,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 /**
@@ -45,12 +42,16 @@ import static org.mockito.Mockito.when;
 @DirtiesContext
 @SpringBootTest(properties = {"spring.autoconfigure.exclude=" +
         "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration"})
-@EmbeddedKafka(partitions = 3, controlledShutdown = true, topics = {"user-event"})
-@TestPropertySource(locations = "/application-test.yaml")
+@EmbeddedKafka(partitions = 3, controlledShutdown = true, topics = {"test-event"})
+@TestPropertySource(
+        locations = "/application-test.yaml",
+        properties = {
+                "spring.kafka.bootstrap-servers=${spring.embedded.kafka.brokers}",
+                "kafka.bootstrapAddress=${spring.embedded.kafka.brokers}",
+                "kafka.topicName=test-event"
+        })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class KafkaIntegrationTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(KafkaIntegrationTest.class);
 
     @Autowired
     private KafkaEventPublishingAspect eventAspect;
@@ -62,7 +63,7 @@ class KafkaIntegrationTest {
     private UsersServiceCrud usersServiceCrud;
 
     @MockitoBean
-    private MapperService mapperService;
+    private UserMapper mapper;
 
     private KafkaMessageListenerContainer<String, UserNotificationDto> kafkaListener;
     private BlockingQueue<ConsumerRecord<String, UserNotificationDto>> records;
@@ -74,7 +75,7 @@ class KafkaIntegrationTest {
     void setUp() {
         DefaultKafkaConsumerFactory<String, UserNotificationDto> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(getConsumerProperties());
-        ContainerProperties containerProperties = new ContainerProperties("user-event");
+        ContainerProperties containerProperties = new ContainerProperties("test-event");
         kafkaListener = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
         records = new LinkedBlockingQueue<>();
         kafkaListener.setupMessageListener((MessageListener<String, UserNotificationDto>) records::add);
@@ -125,8 +126,8 @@ class KafkaIntegrationTest {
         expectedDto.setEmail("test@example.com");
         expectedDto.setEventType("CREATED");
 
-        doNothing().when(usersServiceCrud).save(userEntity);
-        when(mapperService.convertToUserNotificationDto(userEntity)).thenReturn(expectedDto);
+        when(usersServiceCrud.save(userEntity)).thenReturn(userEntity);
+        when(mapper.toUserNotificationDto(userEntity)).thenReturn(expectedDto);
 
         eventAspect.publishUserCreatedEvent(userEntity);
 
@@ -157,7 +158,7 @@ class KafkaIntegrationTest {
         expectedDto.setEventType("DELETED");
 
         when(usersServiceCrud.findOne(userId)).thenReturn(userEntity);
-        when(mapperService.convertToUserNotificationDto(userEntity)).thenReturn(expectedDto);
+        when(mapper.toUserNotificationDto(userEntity)).thenReturn(expectedDto);
 
         eventAspect.publishUserDeletedEvent(userId);
 
