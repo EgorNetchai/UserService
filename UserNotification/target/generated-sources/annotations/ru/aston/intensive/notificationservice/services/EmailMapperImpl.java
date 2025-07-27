@@ -7,7 +7,7 @@ import ru.aston.intensive.notificationservice.model.EmailNotificationEntity;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-07-19T12:28:11+0300",
+    date = "2025-07-24T21:32:22+0300",
     comments = "version: 1.6.3, compiler: javac, environment: Java 17.0.11 (JetBrains s.r.o.)"
 )
 @Component
