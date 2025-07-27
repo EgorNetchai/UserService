@@ -1,0 +1,322 @@
+openapi: 3.1.0
+info:
+  title: User Management API
+  description: API для управления пользователями
+  version: "1.0"
+servers:
+- url: http://localhost:8081
+  description: Generated server url
+tags:
+- name: Пользователи
+  description: Взаимодействие с пользователями
+paths:
+  /users/update/{id}:
+    put:
+      tags:
+      - Пользователи
+      summary: Обновление пользователя
+      description: Обновляет существующего пользователя
+      operationId: updateUser
+      parameters:
+      - name: id
+        in: path
+        description: Id пользователя
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserDto"
+        required: true
+      responses:
+        "200":
+          description: Пользователь успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "400":
+          description: Неверный запрос
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "404":
+          description: Страница не найдена
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "405":
+          description: Метод не разрешен
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "500":
+          description: Ошибка сервера
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "503":
+          description: Сервис недоступен
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+  /users/create:
+    post:
+      tags:
+      - Пользователи
+      summary: Создание пользователя
+      description: Позволяет создавать и сохранять пользователя
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserDto"
+        required: true
+      responses:
+        "201":
+          description: Пользователь создан успешно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "400":
+          description: Ошибка создания пользователя
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "404":
+          description: Страница не найдена
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "405":
+          description: Метод не разрешен
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "500":
+          description: Ошибка сервера
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "503":
+          description: Сервис недоступен
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/UserDto"
+  /users:
+    get:
+      tags:
+      - Пользователи
+      summary: Получение всех пользователей
+      description: Позволяет получить список данных всех пользователей
+      operationId: getUsers
+      responses:
+        "200":
+          description: Все пользователи получены
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "400":
+          description: Неверный запрос
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CollectionModelUserDto"
+        "404":
+          description: Страница не найдена
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CollectionModelUserDto"
+        "500":
+          description: Ошибка сервера
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CollectionModelUserDto"
+        "503":
+          description: Сервис недоступен
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CollectionModelUserDto"
+  /users/{id}:
+    get:
+      tags:
+      - Пользователи
+      summary: Получение пользователя
+      description: Позволяет получить данные пользователя по его Id
+      operationId: getUser
+      parameters:
+      - name: id
+        in: path
+        description: Id пользователя
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Пользователь получен успешно
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "400":
+          description: Неверный запрос
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EntityModelUserDto"
+        "404":
+          description: Страница не найдена
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EntityModelUserDto"
+        "500":
+          description: Ошибка сервера
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EntityModelUserDto"
+        "503":
+          description: Сервис недоступен
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/EntityModelUserDto"
+  /users/delete/{id}:
+    delete:
+      tags:
+      - Пользователи
+      summary: Удаление пользователя
+      description: Удаление существующего пользователя по его ID
+      operationId: deleteUser
+      parameters:
+      - name: id
+        in: path
+        description: Id пользователя
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "204":
+          description: no content
+        "400":
+          description: Неверный запрос
+        "404":
+          description: Страница не найдена
+        "405":
+          description: Метод не разрешен
+        "500":
+          description: Ошибка сервера
+        "503":
+          description: Сервис недоступен
+components:
+  schemas:
+    UserDto:
+      type: object
+      description: Объект передачи данных для сущности UserEntity
+      properties:
+        name:
+          type: string
+          description: Имя пользователя
+          example: John Doe
+          maxLength: 50
+          minLength: 2
+        email:
+          type: string
+          description: Email пользователя
+          example: john.doe@example.com
+          minLength: 1
+        age:
+          type: integer
+          format: int32
+          description: Возраст пользователя
+          example: 30
+          maximum: 150
+          minimum: 0
+        _links:
+          $ref: "#/components/schemas/Links"
+      required:
+      - email
+      - name
+    CollectionModelUserDto:
+      type: object
+      properties:
+        _embedded:
+          type: object
+          properties:
+            userDtoList:
+              type: array
+              items:
+                $ref: "#/components/schemas/UserDto"
+        _links:
+          $ref: "#/components/schemas/Links"
+    EntityModelUserDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя пользователя
+          example: John Doe
+          maxLength: 50
+          minLength: 2
+        email:
+          type: string
+          description: Email пользователя
+          example: john.doe@example.com
+          minLength: 1
+        age:
+          type: integer
+          format: int32
+          description: Возраст пользователя
+          example: 30
+          maximum: 150
+          minimum: 0
+        _links:
+          $ref: "#/components/schemas/Links"
+      required:
+      - email
+      - name
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        hreflang:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+        templated:
+          type: boolean
+    Links:
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/Link"

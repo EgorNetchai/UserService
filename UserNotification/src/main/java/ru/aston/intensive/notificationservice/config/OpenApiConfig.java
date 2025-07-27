@@ -21,9 +21,9 @@ public class OpenApiConfig {
     public OpenAPI customOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("User Management API")
+                        .title("Email Management API")
                         .version("1.0")
-                        .description("API для управления пользователями")
+                        .description("API для отправки email")
                 );
     }
 }

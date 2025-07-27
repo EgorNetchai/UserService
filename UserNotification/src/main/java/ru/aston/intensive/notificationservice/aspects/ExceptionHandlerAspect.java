@@ -26,10 +26,10 @@ public class ExceptionHandlerAspect {
      * Обрабатывает исключения, возникшие при отправке email.
      *
      * @param event событие пользователя
-     * @param ex исключение
+     * @param ex    исключение
      */
     @AfterThrowing(pointcut = "execution(* ru.aston.intensive.notificationservice.services." +
-            "EmailService.sendEmail(..)) && args(event)", throwing = "ex")
+            "MessageServiceImpl.sendEmail(..)) && args(event)", throwing = "ex")
     public void handleSendEmailException(UserNotificationDto event, Exception ex) {
         if (ex instanceof MailException) {
             logger.error("Не удалось отправить email на адрес {}: {}", event.getEmail(), ex.getMessage(), ex);
@@ -42,7 +42,7 @@ public class ExceptionHandlerAspect {
      * Обрабатывает исключения, возникшие при обработке события пользователя.
      *
      * @param event событие пользователя
-     * @param ex исключение
+     * @param ex    исключение
      */
     @AfterThrowing(pointcut = "execution(* ru.aston.intensive.notificationservice.services." +
             "KafkaConsumer.listenUserEvents(..)) && args(event)", throwing = "ex")
