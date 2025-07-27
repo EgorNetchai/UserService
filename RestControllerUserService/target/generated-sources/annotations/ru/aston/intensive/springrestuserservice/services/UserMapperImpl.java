@@ -8,7 +8,7 @@ import ru.aston.intensive.springrestuserservice.models.UserEntity;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-07-18T21:33:17+0300",
+    date = "2025-07-24T21:30:37+0300",
     comments = "version: 1.6.3, compiler: javac, environment: Java 17.0.11 (JetBrains s.r.o.)"
 )
 @Component

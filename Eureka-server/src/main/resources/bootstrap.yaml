@@ -1,6 +1,7 @@
 spring:
   application:
-    name: discovery-service
+    name: eureka-server
   cloud:
     config:
-      uri: http://localhost:8888/config
+      uri: ${SERVER_CONFIGURATION_URL}
+      profile: ${SPRING_PROFILES_ACTIVE:docker}

@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL}
+
+spring:
+  application:
+    name: api-gateway
+    gateway:
+      routes:
+        - id: user_service
+          uri: http://user-service:8081
+          predicates:
+            - Path=/user-service/**
+          filters:
+            - StripPrefix=1
+            - AddRequestHeader=X-Request-Source,Gateway
+        - id: notification_service
+          uri: http://notification-service:8082
+          predicates:
+            - Path=/notification-service/**
+          filters:
+            - StripPrefix=1
+
+logging:
+  level:
+    com.netflix.discovery: DEBUG
+    org.springframework.cloud: DEBUG
